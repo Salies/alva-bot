@@ -70,7 +70,7 @@ function inserirJogos(platform){
       await page.goto(gamesUrl);
 //pesquisa o nome do jogo
       await page.click(search_selector);
-      var gameName = (games[i].name).replace(/[-™©®]/g,' ');
+      var gameName = (games[i].name).replace(/[-™©®!]/g,' ');
       var gamePlayed = games[i].played;
       await page.keyboard.type(gameName);
       await page.keyboard.press('Enter');
