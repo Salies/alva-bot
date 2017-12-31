@@ -1,11 +1,13 @@
-const fs = require('fs');
+﻿const fs = require('fs');
 const request = require('request');
 const async = require('async');
+const info = JSON.parse(fs.readFileSync('info.json', 'utf8'));
 
-const key = '';
+const key = info.key;
 
-var raw = '';
+var raw = info.id;
 
+//boa parte desse código eu reaproveitei do meu csgo-profiler ;)
 async.waterfall([
     function(callback) {
         let url = `http://api.steampowered.com/ISteamUser/ResolveVanityURL/v1/?key=${key}&vanityurl=${raw}&format=json`;
@@ -26,66 +28,30 @@ async.waterfall([
         });
     },
     function(inp, callback) {
-        console.log(inp);
-        let gamesUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${key}&steamid=${inp}&format=json`;
+        console.log(`O ID real do jogador é: ${inp}`);
+        let gamesUrl = `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${key}&steamid=${inp}&format=json&include_played_free_games=1&include_appinfo=1`;
         request(gamesUrl, function(err, rep, res){
+            let gameCount = (JSON.parse(res)).response.game_count;
             let rawGames = (JSON.parse(res)).response.games;
-            let duration = (((JSON.parse(res)).response.game_count) * 3) / 60;
-            console.log(`A criação da lista de jogos durará cerca de ${duration} minutos.\nPor favor não feche o cmd até o fim da operção, ou esta terá que ser realizada novamente desde o início.`)
-            callback(null, rawGames)
+            callback(null, rawGames, gameCount)
         });
     }], 
-    function(err, rawGames) {
-        var interval;
-        let i = 0;
-        var data = [];
-        var json = JSON.stringify(data);
-        fs.writeFile('data.json', json, 'utf8', function(){
-            console.log(`Arquivo base criado. Iniciando a inserção de jogos...`);
-        });
-
-        function getGame() {
-            if(rawGames[i]==undefined){process.exit(console.log('Lista de jogos criada com sucesso.'));}
-            let playtime = rawGames[i].playtime_forever;
-            var played = true;
-            if(playtime > 0){
-                played = true;
+    function(err, rawGames, gameCount) {
+        var games = [];
+        for(i=0;i<rawGames.length;i++){
+            if(rawGames[i].playtime_forever > 0){
+                var played = true
             }
             else{
-                played = false;
+                var played = false;
             }
-            let appid = rawGames[i].appid;
-            let gameUrl = `http://store.steampowered.com/api/appdetails?appids=${appid}`;
-            request(gameUrl, function(err, rep, res){
-                let r = JSON.parse(res);
-                if(r[appid].success===false){
-                    return;
-                }
-                let gameName = r[appid].data.name;
-                console.log(`Escrevendo jogo: ${gameName}`);
-                var callback = function(){
-                    console.log(`${gameName} escrito`);
-                }
-                fs.readFile('data.json', 'utf8', function readFileCallback(err, obj){
-                    if (err){
-                        console.log(err);
-                    } else {
-                    data = JSON.parse(obj); //now it an object
-                    data.push({name: gameName, played:played}); //add some data
-                    json = JSON.stringify(data); //convert it back to json
-                    fs.writeFile('data.json', json, 'utf8', callback); // write it back 
-                }});
-            });
-
-            if(i < rawGames.length){
-                i++;
-            }
-            else{
-                clearInterval(interval); 
-                process.exit(console.log('Lista de jogos criada com sucesso.'));
-            }
+            games.push({name:rawGames[i].name, played:played});
         }
-        
-        interval = setInterval(getGame, 3000);
+
+        var gamesJSON = JSON.stringify(games);
+
+        fs.writeFile('data.json', gamesJSON, 'utf8', function(){
+            console.log(`Lista de jogos criada - ${gameCount} jogos adicionados com sucesso!`);
+        });
     }
 );

@@ -1,0 +1,19 @@
+{
+  "name": "alvanista-bot",
+  "version": "0.8.0",
+  "description": "A gaming social network (Alvanista) bot.",
+  "main": "run.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Salies/alva-bot.git"
+  },
+  "author": "Daniel \"Salies\" Serezane",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Salies/alva-bot/issues"
+  },
+  "homepage": "https://github.com/Salies/alva-bot#readme"
+}
