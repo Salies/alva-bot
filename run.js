@@ -10,8 +10,6 @@ TODO (À FAZER)
 //chama as depedências
 const fs = require('fs');
 const puppeteer = require('puppeteer');
-const request = require('request');
-const async = require('async');
 const info = JSON.parse(fs.readFileSync('info.json', 'utf8'));
 
 //informações de login e plataforma
